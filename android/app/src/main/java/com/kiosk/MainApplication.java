@@ -10,8 +10,9 @@ import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
-
 import java.util.List;
+import io.invertase.firebase.database.RNFirebaseDatabasePackage;
+import io.invertase.firebase.auth.RNFirebaseAuthPackage;// <-- Add this line
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -25,8 +26,11 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       @SuppressWarnings("UnnecessaryLocalVariable")
       List<ReactPackage> packages = new PackageList(this).getPackages();
+
       // Packages that cannot be autolinked yet can be added manually here, for example:
-      // packages.add(new MyReactNativePackage());
+      //packages.add(new RNFirebasePackage
+      packages.add(new RNFirebaseDatabasePackage());
+      packages.add(new RNFirebaseAuthPackage());
       return packages;
     }
 
