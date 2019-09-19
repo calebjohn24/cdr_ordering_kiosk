@@ -33,6 +33,7 @@ try {
       Alert.alert('Error', errorMessage);
       break;
   }
+
 }
 
 class HomeScreen extends React.Component{
@@ -137,9 +138,9 @@ class SquareScreen extends React.Component{
       tipSettings: {
         showCustomTipField: false,
         showSeparateTipScreen: false,
-        tipPercentages: [15, 20, 30],
+        tipPercentages: [10, 15, 20],
       },
-      additionalPaymentTypes: ['cash', 'manual_card_entry', 'other'],
+      additionalPaymentTypes: ['cash'],
     };
 
     try {
@@ -150,8 +151,9 @@ class SquareScreen extends React.Component{
         { minimumFractionDigits: 0, maximumFractionDigits: 2 },
       );
       const formattedCurrency = currencyFormatter(checkoutResult.totalMoney.amount / 100);
-      Alert.alert(`${formattedCurrency} Successfully Charged`, 'See the debugger console for transaction details. You can refund transactions from your Square Dashboard.');
+      alert(`${formattedCurrency} Successfully Charged`, 'See the debugger console for transaction details. You can refund transactions from your Square Dashboard.');
       console.log(JSON.stringify(checkoutResult));
+
     } catch (ex) {
       let errorMessage = ex.message;
       switch (ex.code) {
@@ -185,7 +187,9 @@ class SquareScreen extends React.Component{
         <StatusBar hidden/>
               <TouchableOpacity
                 style={styles.button}
-                onPress={() => this.onCheckout()}>
+                onPress={() =>
+                {this.onCheckout(); this.props.navigation.navigate('Home'); }}>
+
               <Text style={styles.titleText}> Pay $1 </Text>
               </TouchableOpacity>
       </View>
