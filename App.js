@@ -1,10 +1,17 @@
 import React from 'react';
 import { View, Text, Button, StatusBar, AppRegistry, StyleSheet} from 'react-native';
 import { WebView } from 'react-native-webview';
+import firebase from 'react-native-firebase';
 import { createAppContainer, createStackNavigator, StackActions, NavigationActions } from 'react-navigation';
 var uid = "vjsoqWdhbEYIKH4q00Zrp20UFHH3"
 var link = "https://google.com"
-
+firebase.auth()
+  .signInAnonymously()
+  .then(credential => {
+    if (credential) {
+      console.log('default app user ->', credential.user.toJSON());
+    }
+  });
 class HomeScreen extends React.Component {
   render() {
     return (

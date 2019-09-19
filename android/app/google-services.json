@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "800423927849",
+    "firebase_url": "https://cedarchatbot.firebaseio.com",
+    "project_id": "cedarchatbot",
+    "storage_bucket": "cedarchatbot.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:800423927849:android:004d3e8da604ae70aabc38",
+        "android_client_info": {
+          "package_name": "com.kiosk"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "800423927849-enlmuvlq2btoben86puv6opf36oe8gi5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQOpem758--EVT6084KzHsV06y8k_7jaU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "800423927849-enlmuvlq2btoben86puv6opf36oe8gi5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
