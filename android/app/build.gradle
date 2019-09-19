@@ -126,13 +126,33 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    dexOptions {
+    // Ensures incremental builds remain fast
+    preDexLibraries true
+    // Required to build with Reader SDK
+    jumboMode true
+    // Required to build with Reader SDK
+    keepRuntimeAnnotatedClasses false
+  }
+  repositories {
+  google()
+  maven {
+    url "https://sdk.squareup.com/android"
+    credentials {
+      username "sq0idp-taGpJk5rPAp_ragT6WZW4w"
+      password "3shfv3imncal7wuc6bzasprkxj4gpvbjte56deeko2e4n5yjngea"
 
-    defaultConfig {
+    }
+  }
+  jcenter()
+}
+  defaultConfig {
         applicationId "com.kiosk"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
     }
     splits {
         abi {

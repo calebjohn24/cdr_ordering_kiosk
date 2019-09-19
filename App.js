@@ -3,8 +3,37 @@ import { TextInput,TouchableOpacity,View, Text, Button, StatusBar, AppRegistry, 
 import { WebView } from 'react-native-webview';
 import firebase from 'react-native-firebase';
 import { createAppContainer, createStackNavigator, StackActions, NavigationActions } from 'react-navigation';
+import {
+  startCheckoutAsync,
+  CheckoutErrorCancelled,
+  CheckoutErrorSdkNotAuthorized,
+  UsageError,
+  authorizeAsync,
+AuthorizeErrorNoNetwork
+} from 'react-native-square-reader-sdk';
+
 var uid = "vjsoqWdhbEYIKH4q00Zrp20UFHH3"
 var link = "https://google.com"
+
+try {
+  // authCode is a mobile authorization code from the Mobile Authorization API
+  const authorizedLocation = authorizeAsync("sq0acp-XvXFzWdzqPIhNodJqwTUnxnOG-vGFS05nXLeZoFkWC0");
+  // Authorized and authorizedLocation is available
+} catch(ex) {
+  switch(ex.code) {
+    case AuthorizeErrorNoNetwork:
+      // Remind connecting to network
+      break;
+    case UsageError:
+      let errorMessage = ex.message;
+      if (__DEV__) {
+        errorMessage += `\n\nDebug Message: ${ex.debugMessage}`;
+        console.log(`${ex.code}:${ex.debugCode}:${ex.debugMessage}`)
+      }
+      Alert.alert('Error', errorMessage);
+      break;
+  }
+}
 
 class HomeScreen extends React.Component{
   render() {
@@ -78,15 +107,87 @@ class DetailsScreen extends React.Component{
 }
 
 class SquareScreen extends React.Component{
-  render() {
-    const { navigation } = this.props;
-    const itemId = navigation.getParam('numId', '555');
+  async componentDidMount() {
+    try {
+      const authorizedLocation = await getAuthorizedLocationAsync();
+      this.setState({ locationName: authorizedLocation.name });
+    } catch (ex) {
+      if (__DEV__) {
+        Alert.alert(ex.debugCode, ex.debugMessage);
+      } else {
+        Alert.alert(ex.code, ex.message);
+      }
+    }
+  }
+
+  async onCheckout() {
+    const { navigate } = this.props.navigation;
+    // A checkout parameter is required for this checkout method
+    const checkoutParams = {
+      amountMoney: {
+        amount: 100,
+        currencyCode: 'USD', // optional, use authorized location's currency code by default
+      },
+      // Optional for all following configuration
+      skipReceipt: true,
+      collectSignature: true,
+      allowSplitTender: false,
+      delayCapture: false,
+      note: 'Payment',
+      tipSettings: {
+        showCustomTipField: false,
+        showSeparateTipScreen: false,
+        tipPercentages: [15, 20, 30],
+      },
+      additionalPaymentTypes: ['cash', 'manual_card_entry', 'other'],
+    };
+
+    try {
+      const checkoutResult = await startCheckoutAsync(checkoutParams);
+      // Consume checkout result from here
+      const currencyFormatter = this.props.globalize.getCurrencyFormatter(
+        checkoutResult.totalMoney.currencyCode,
+        { minimumFractionDigits: 0, maximumFractionDigits: 2 },
+      );
+      const formattedCurrency = currencyFormatter(checkoutResult.totalMoney.amount / 100);
+      Alert.alert(`${formattedCurrency} Successfully Charged`, 'See the debugger console for transaction details. You can refund transactions from your Square Dashboard.');
+      console.log(JSON.stringify(checkoutResult));
+    } catch (ex) {
+      let errorMessage = ex.message;
+      switch (ex.code) {
+        case CheckoutErrorCanceled:
+          // Handle canceled transaction here
+          console.log('transaction canceled.');
+          break;
+        case CheckoutErrorSdkNotAuthorized:
+          // Handle sdk not authorized
+          navigate('Deauthorizing');
+          break;
+        default:
+          if (__DEV__) {
+            errorMessage += `\n\nDebug Message: ${ex.debugMessage}`;
+            console.log(`${ex.code}:${ex.debugCode}:${ex.debugMessage}`);
+          }
+          Alert.alert('Error', errorMessage);
+          break;
+      }
+    }
+    }
+    render(){
+      const { navigation } = this.props;
+      const itemId = navigation.getParam('numId', '555');
+      firebase.database().ref(`public/${itemId}`).once('value', function (snapshot) {
+        const chargeAmt = (snapshot.val())
+        return chargeAmt;
+      })
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#000000' }}>
-        <StatusBar hidden />
-        <Text style={styles.titleText}>
-        {itemId}
-        </Text>
+        <StatusBar hidden/>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => this.onCheckout()}>
+              <Text style={styles.titleText}> Pay $1 </Text>
+              </TouchableOpacity>
       </View>
     );
   }

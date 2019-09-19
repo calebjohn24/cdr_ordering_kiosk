@@ -13,6 +13,7 @@ import com.facebook.soloader.SoLoader;
 import java.util.List;
 import io.invertase.firebase.database.RNFirebaseDatabasePackage;
 import io.invertase.firebase.auth.RNFirebaseAuthPackage;// <-- Add this line
+import com.squareup.sdk.reader.ReaderSdk;
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -48,6 +49,7 @@ public class MainApplication extends Application implements ReactApplication {
   @Override
   public void onCreate() {
     super.onCreate();
+    ReaderSdk.initialize(this);
     SoLoader.init(this, /* native exopackage */ false);
   }
 }
