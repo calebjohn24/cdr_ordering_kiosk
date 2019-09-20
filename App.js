@@ -30,7 +30,7 @@ try {
         errorMessage += `\n\nDebug Message: ${ex.debugMessage}`;
         console.log(`${ex.code}:${ex.debugCode}:${ex.debugMessage}`)
       }
-      Alert.alert('Error', errorMessage);
+      //alert('Error', errorMessage);
       break;
   }
 
@@ -108,25 +108,30 @@ class DetailsScreen extends React.Component{
 }
 
 class SquareScreen extends React.Component{
+  constructor(props) {
+    super(props);
+    //this.readUserData = this.readUserData.bind(this)
+    //this.snapshot = this.snapshot.bind(this)
+    this.state = {amtCharge: 0};
+  }
+  //var amt = 0;
   async componentDidMount() {
     try {
       const authorizedLocation = await getAuthorizedLocationAsync();
       this.setState({ locationName: authorizedLocation.name });
     } catch (ex) {
       if (__DEV__) {
-        Alert.alert(ex.debugCode, ex.debugMessage);
+        //alert(ex.debugCode, ex.debugMessage);
       } else {
-        Alert.alert(ex.code, ex.message);
+        //alert(ex.code, ex.message);
       }
     }
   }
-
-  async onCheckout() {
+  async onCheckout(amt) {
     const { navigate } = this.props.navigation;
-    // A checkout parameter is required for this checkout method
     const checkoutParams = {
       amountMoney: {
-        amount: 100,
+        amount: amt,
         currencyCode: 'USD', // optional, use authorized location's currency code by default
       },
       // Optional for all following configuration
@@ -134,13 +139,12 @@ class SquareScreen extends React.Component{
       collectSignature: true,
       allowSplitTender: false,
       delayCapture: false,
-      note: 'Payment',
+      note: "Kiosk Payment",
       tipSettings: {
-        showCustomTipField: false,
+        showCustomTipField: true,
         showSeparateTipScreen: false,
         tipPercentages: [10, 15, 20],
-      },
-      additionalPaymentTypes: ['cash'],
+      }
     };
 
     try {
@@ -151,16 +155,19 @@ class SquareScreen extends React.Component{
         { minimumFractionDigits: 0, maximumFractionDigits: 2 },
       );
       const formattedCurrency = currencyFormatter(checkoutResult.totalMoney.amount / 100);
-      alert(`${formattedCurrency} Successfully Charged`, 'See the debugger console for transaction details. You can refund transactions from your Square Dashboard.');
+      //alert(`${formattedCurrency} Successfully Charged`, 'See the debugger console for transaction details. You can refund transactions from your Square Dashboard.');
       console.log(JSON.stringify(checkoutResult));
+      this.props.navigation.navigate('Home');
 
     } catch (ex) {
       let errorMessage = ex.message;
       switch (ex.code) {
+        /*
         case CheckoutErrorCanceled:
           // Handle canceled transaction here
           console.log('transaction canceled.');
           break;
+        */
         case CheckoutErrorSdkNotAuthorized:
           // Handle sdk not authorized
           navigate('Deauthorizing');
@@ -170,28 +177,34 @@ class SquareScreen extends React.Component{
             errorMessage += `\n\nDebug Message: ${ex.debugMessage}`;
             console.log(`${ex.code}:${ex.debugCode}:${ex.debugMessage}`);
           }
-          Alert.alert('Error', errorMessage);
+          //alert('Error', errorMessage);
           break;
       }
     }
+    this.props.navigation.navigate('Home')
     }
+
+
     render(){
       const { navigation } = this.props;
-      const itemId = navigation.getParam('numId', '555');
-      firebase.database().ref(`public/${itemId}`).once('value', function (snapshot) {
-        const chargeAmt = (snapshot.val())
-        return chargeAmt;
-      })
+      const itmId = navigation.getParam('numId', '555');
+      firebase.database().ref("public").child(itmId).once('value', (snapshot) => {
+             //alert(snapshot.val())
+             this.onCheckout(snapshot.val());
+        });
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#000000' }}>
         <StatusBar hidden/>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() =>
-                {this.onCheckout(); this.props.navigation.navigate('Home'); }}>
-
-              <Text style={styles.titleText}> Pay $1 </Text>
-              </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={(itemId) => {
+            firebase.database().ref("public").child(itmId).once('value', (snapshot) => {
+                   //alert(snapshot.val())
+                   this.onCheckout(snapshot.val());
+              });
+          }}>
+        <Text style={styles.titleText}> Pay Now </Text>
+        </TouchableOpacity>
       </View>
     );
   }
