@@ -137,7 +137,7 @@ class SquareScreen extends React.Component{
       // Optional for all following configuration
       skipReceipt: true,
       collectSignature: true,
-      allowSplitTender: false,
+      allowSplitTender: true,
       delayCapture: false,
       note: "Kiosk Payment",
       tipSettings: {
@@ -149,6 +149,7 @@ class SquareScreen extends React.Component{
 
     try {
       const checkoutResult = await startCheckoutAsync(checkoutParams);
+      this.props.navigation.navigate('Home');
       // Consume checkout result from here
       const currencyFormatter = this.props.globalize.getCurrencyFormatter(
         checkoutResult.totalMoney.currencyCode,
@@ -157,17 +158,15 @@ class SquareScreen extends React.Component{
       const formattedCurrency = currencyFormatter(checkoutResult.totalMoney.amount / 100);
       //alert(`${formattedCurrency} Successfully Charged`, 'See the debugger console for transaction details. You can refund transactions from your Square Dashboard.');
       console.log(JSON.stringify(checkoutResult));
-      this.props.navigation.navigate('Home');
+
 
     } catch (ex) {
       let errorMessage = ex.message;
       switch (ex.code) {
-        /*
         case CheckoutErrorCanceled:
           // Handle canceled transaction here
           console.log('transaction canceled.');
           break;
-        */
         case CheckoutErrorSdkNotAuthorized:
           // Handle sdk not authorized
           navigate('Deauthorizing');
@@ -181,7 +180,6 @@ class SquareScreen extends React.Component{
           break;
       }
     }
-    this.props.navigation.navigate('Home')
     }
 
 
