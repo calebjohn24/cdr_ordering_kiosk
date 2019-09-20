@@ -137,7 +137,7 @@ class SquareScreen extends React.Component{
       // Optional for all following configuration
       skipReceipt: true,
       collectSignature: true,
-      allowSplitTender: false,
+      allowSplitTender: true,
       delayCapture: false,
       note: "Kiosk Payment",
       tipSettings: {
@@ -162,12 +162,10 @@ class SquareScreen extends React.Component{
     } catch (ex) {
       let errorMessage = ex.message;
       switch (ex.code) {
-        /*
         case CheckoutErrorCanceled:
           // Handle canceled transaction here
           console.log('transaction canceled.');
           break;
-        */
         case CheckoutErrorSdkNotAuthorized:
           // Handle sdk not authorized
           navigate('Deauthorizing');
@@ -181,7 +179,6 @@ class SquareScreen extends React.Component{
           break;
       }
     }
-    this.props.navigation.navigate('Home')
     }
 
 
