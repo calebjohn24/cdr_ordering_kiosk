@@ -12,7 +12,7 @@ AuthorizeErrorNoNetwork,
 deauthorizeAsync, canDeauthorizeAsync
 } from 'react-native-square-reader-sdk';
 
-var uid = "sq0acp-tdwVqBJgxKfmrVNftshgbPqN2ceLQyNC_ODIZH28Jx0"
+var uid = "sq0acp-J5FkblPzGGWKMP-m3PHn-kiDj7Kr7ORbaS2DEQfrBdg"
 var link = "https://a1e57b11.ngrok.io/cedar-location-1/order"
 
 
@@ -116,7 +116,7 @@ class HomeScreen extends React.Component{
           startInLoadingStage={true}
           onMessage = {event =>{
                   const { data } = event.nativeEvent;
-                  alert(data);
+                  // alert(data);
 
                   data_arr = data.split("~");
                   var amt = parseInt(data_arr[0], 10);
@@ -175,7 +175,7 @@ class SquareScreen extends React.Component{
 
     try {
       const checkoutResult = await startCheckoutAsync(checkoutParams);
-      this.props.navigation.navigate('Home');
+      // this.props.navigation.navigate('Home');
       // Consume checkout result from here
       // webHook Here
       const currencyFormatter = this.props.globalize.getCurrencyFormatter(
@@ -185,6 +185,7 @@ class SquareScreen extends React.Component{
       const formattedCurrency = currencyFormatter(checkoutResult.totalMoney.amount / 100);
       //alert(`${formattedCurrency} Successfully Charged`, 'See the debugger console for transaction details. You can refund transactions from your Square Dashboard.');
       console.log(JSON.stringify(checkoutResult));
+      alert("done");
 
 
     } catch (ex) {
@@ -210,6 +211,7 @@ class SquareScreen extends React.Component{
       const { navigation } = this.props;
       const amt = navigation.getParam('amt', 101);
       const token = navigation.getParam('token', '-noToken');
+      var disp_amt = String(parseFloat(amt/100));
 
       // this.onCheckout(amt,token);
     return (
@@ -219,9 +221,19 @@ class SquareScreen extends React.Component{
             style={styles.button}
             onPress={() => {
                      this.onCheckout(amt,token);
+                     this.props.navigation.navigate('Home');
 
             }}>
-          <Text style={styles.titleText}> Pay ${amt}</Text>
+          <Text style={styles.titleText}> Pay ${disp_amt}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+                     // this.onCheckout(amt,token);
+                     this.props.navigation.navigate('Home');
+
+            }}>
+          <Text style={styles.titleText}>Cancel order</Text>
           </TouchableOpacity>
       </View>
     );
