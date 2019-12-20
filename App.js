@@ -12,7 +12,7 @@ AuthorizeErrorNoNetwork,
 deauthorizeAsync, canDeauthorizeAsync
 } from 'react-native-square-reader-sdk';
 
-var uid = "sq0acp-9wQm5bXInb43TJtfam366l4C2oiD_dznbk_K5qEKWs0"
+var uid = "sq0acp-tdwVqBJgxKfmrVNftshgbPqN2ceLQyNC_ODIZH28Jx0"
 var link = "https://a1e57b11.ngrok.io/cedar-location-1/order"
 
 
@@ -94,16 +94,10 @@ class HomeScreen extends React.Component{
   constructor(props) {
         super(props)
     }
-    onMessage = (data) => {
-        var raw = String(data);
-        var data_arr = raw.split("~");
-        var amt = parseInt(data_arr[0], 10);
-        var token = String(data_arr[1]);
-        alert(raw);
-        this.props.navigation.navigate('Square', {amt: amt, token:token});
-      }
+
 
   render() {
+
     return (
       <View style={styles.container}>
 
@@ -120,7 +114,18 @@ class HomeScreen extends React.Component{
           automaticallyAdjustContentInsets={false}
           allowFileAccess={true}
           startInLoadingStage={true}
-          onMessage={this.onMessage}
+          onMessage = {event =>{
+                  const { data } = event.nativeEvent;
+                  alert(data);
+
+                  data_arr = data.split("~");
+                  var amt = parseInt(data_arr[0], 10);
+                  var token = String(data_arr[1]);
+
+                  this.props.navigation.navigate('Square', {amt: amt, token:token});
+
+                }
+          }
           />
       </View>
     );
@@ -148,7 +153,7 @@ class SquareScreen extends React.Component{
       }
     }
   }
-  async onCheckout(amt) {
+  async onCheckout(amt, token) {
     const { navigate } = this.props.navigation;
     const checkoutParams = {
       amountMoney: {
@@ -205,10 +210,19 @@ class SquareScreen extends React.Component{
       const { navigation } = this.props;
       const amt = navigation.getParam('amt', 101);
       const token = navigation.getParam('token', '-noToken');
-      this.onCheckout(amt);
+
+      // this.onCheckout(amt,token);
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#000000' }}>
         <StatusBar hidden/>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+                     this.onCheckout(amt,token);
+
+            }}>
+          <Text style={styles.titleText}> Pay ${amt}</Text>
+          </TouchableOpacity>
       </View>
     );
   }
