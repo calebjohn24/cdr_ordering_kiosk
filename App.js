@@ -1,7 +1,6 @@
 import React from 'react';
 import { TextInput,TouchableOpacity,View, Text, Button, StatusBar, AppRegistry, StyleSheet} from 'react-native';
 import { WebView } from 'react-native-webview';
-import firebase from 'react-native-firebase';
 import { createAppContainer, createStackNavigator, StackActions, NavigationActions } from 'react-navigation';
 import {
   startCheckoutAsync,
@@ -9,105 +8,127 @@ import {
   CheckoutErrorSdkNotAuthorized,
   UsageError,
   authorizeAsync,
-AuthorizeErrorNoNetwork
+AuthorizeErrorNoNetwork,
+deauthorizeAsync, canDeauthorizeAsync
 } from 'react-native-square-reader-sdk';
 
-var uid = "vjsoqWdhbEYIKH4q00Zrp20UFHH3"
-var link = "https://google.com"
+var uid = "sq0acp-9wQm5bXInb43TJtfam366l4C2oiD_dznbk_K5qEKWs0"
+var link = "https://a1e57b11.ngrok.io/cedar-location-1/order"
 
-try {
-  // authCode is a mobile authorization code from the Mobile Authorization API
-  const authorizedLocation = authorizeAsync("sq0acp-XvXFzWdzqPIhNodJqwTUnxnOG-vGFS05nXLeZoFkWC0");
-  // Authorized and authorizedLocation is available
-} catch(ex) {
-  switch(ex.code) {
-    case AuthorizeErrorNoNetwork:
-      // Remind connecting to network
-      break;
-    case UsageError:
-      let errorMessage = ex.message;
-      if (__DEV__) {
-        errorMessage += `\n\nDebug Message: ${ex.debugMessage}`;
-        console.log(`${ex.code}:${ex.debugCode}:${ex.debugMessage}`)
+
+class AuthScreen extends React.Component{
+  static NavigationOptions = { title: 'Order', header: { visible:false } };
+
+  componentDidMount() {
+    window.setTimeout(async () => {
+      if (await canDeauthorizeAsync()) {
+        try {
+          await deauthorizeAsync();
+          try {
+            // authCode is a mobile authorization code from the Mobile Authorization API
+            const authorizedLocation = authorizeAsync(uid);
+            // Authorized and authorizedLocation is available
+          } catch(ex) {
+            switch(ex.code) {
+              case AuthorizeErrorNoNetwork:
+                // Remind connecting to network
+                break;
+              case UsageError:
+                let errorMessage = ex.message;
+                if (__DEV__) {
+                  errorMessage += `\n\nDebug Message: ${ex.debugMessage}`;
+                  console.log(`${ex.code}:${ex.debugCode}:${ex.debugMessage}`)
+                }
+                //alert('Error', errorMessage);
+                break;
+            }
+          }
+        } catch (ex) {
+          let errorMessage = ex.message;
+          if (__DEV__) {
+            errorMessage += `\n\nDebug Message: ${ex.debugMessage}`;
+            console.log(`${ex.code}:${ex.debugCode}:${ex.debugMessage}`);
+          }
+          alert('Error', errorMessage);
+        }
+      } else {
+        alert('Unable to deauthorize', 'You cannot deauthorize right now.');
       }
-      //alert('Error', errorMessage);
-      break;
+    }, 1000);
+
+
+
   }
-
-}
-
-class HomeScreen extends React.Component{
   render() {
     return (
       <View style={styles.container}>
         <StatusBar hidden />
-        <WebView
-          style={styles.WebViewStyle}
-          source={{ uri: link }}
-          javaScriptEnabled={true}
-          domStorageEnabled={true} />
+        <Text> </Text>
+        <Text> </Text>
+        <Text> </Text>
+        <Text> </Text>
+        <Text> </Text>
         <Button
-          title=" "
+          title="Press Here To start"
           color = "green"
           onPress={() => {
             this.props.navigation.dispatch(StackActions.reset({
               index: 0,
               actions: [
-                NavigationActions.navigate({ routeName: 'Details' })
+                NavigationActions.navigate({ routeName: 'Home' })
               ],
             }))
           }}
         />
+
       </View>
     );
   }
 }
 
-class DetailsScreen extends React.Component{
+
+
+
+class HomeScreen extends React.Component{
+  static NavigationOptions = { title: 'Order', header: { visible:false } };
   constructor(props) {
-    super(props);
-    this.state = {text: ''};
-  }
+        super(props)
+    }
+    onMessage = (data) => {
+        var raw = String(data);
+        var data_arr = raw.split("~");
+        var amt = parseInt(data_arr[0], 10);
+        var token = String(data_arr[1]);
+        alert(raw);
+        this.props.navigation.navigate('Square', {amt: amt, token:token});
+      }
+
   render() {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#000000' }}>
-        <StatusBar hidden />
-        <Text style={styles.titleText}>
-        Enter Your Phone Number Again To Keep Your Payment Secure{"\n"}
-        </Text>
-        <Text style={styles.titleText}>
-        Please Put a 1 In Front of Your Number{"\n"}
-        </Text>
-        <TextInput
-            style={{width:300, height: 60, borderColor: 'white', borderWidth: 1, backgroundColor: 'white' }}
-            keyboardType={'numeric'}
-            placeholder="format 12223334444"
-            maxLength={11}
-            returnKeyLabel = {"next"}
-            onChangeText={
-              (text) => this.setState({text})
-            }
-            value={this.state.text}
-          />
-        <Text style={styles.titleText}>
-          {"\n"}
-        </Text>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => {
-              this.props.navigation.navigate('Square', {
-              numId: this.state.text });
-          }}
-        >
-          <Text style={styles.titleText}> Next </Text>
-          </TouchableOpacity>
+      <View style={styles.container}>
 
+        <StatusBar hidden />
+        <WebView
+          ref={"webview"}
+          originWhitelist={['*']}
+
+          source={{ uri: link }}
+          mixedContentMode={"always"}
+          scalesPageToFit={true}
+          javaScriptEnabled={true}
+          domStorageEnabled={true}
+          automaticallyAdjustContentInsets={false}
+          allowFileAccess={true}
+          startInLoadingStage={true}
+          onMessage={this.onMessage}
+          />
       </View>
     );
   }
 }
 
 class SquareScreen extends React.Component{
+  static NavigationOptions = { title: 'Order', header: { visible:false } };
   constructor(props) {
     super(props);
     //this.readUserData = this.readUserData.bind(this)
@@ -151,6 +172,7 @@ class SquareScreen extends React.Component{
       const checkoutResult = await startCheckoutAsync(checkoutParams);
       this.props.navigation.navigate('Home');
       // Consume checkout result from here
+      // webHook Here
       const currencyFormatter = this.props.globalize.getCurrencyFormatter(
         checkoutResult.totalMoney.currencyCode,
         { minimumFractionDigits: 0, maximumFractionDigits: 2 },
@@ -163,10 +185,6 @@ class SquareScreen extends React.Component{
     } catch (ex) {
       let errorMessage = ex.message;
       switch (ex.code) {
-        case CheckoutErrorCanceled:
-          // Handle canceled transaction here
-          console.log('transaction canceled.');
-          break;
         case CheckoutErrorSdkNotAuthorized:
           // Handle sdk not authorized
           navigate('Deauthorizing');
@@ -185,24 +203,12 @@ class SquareScreen extends React.Component{
 
     render(){
       const { navigation } = this.props;
-      const itmId = navigation.getParam('numId', '555');
-      firebase.database().ref("public").child(itmId).once('value', (snapshot) => {
-             //alert(snapshot.val())
-             this.onCheckout(snapshot.val());
-        });
+      const amt = navigation.getParam('amt', 101);
+      const token = navigation.getParam('token', '-noToken');
+      this.onCheckout(amt);
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#000000' }}>
         <StatusBar hidden/>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={(itemId) => {
-            firebase.database().ref("public").child(itmId).once('value', (snapshot) => {
-                   //alert(snapshot.val())
-                   this.onCheckout(snapshot.val());
-              });
-          }}>
-        <Text style={styles.titleText}> Pay Now </Text>
-        </TouchableOpacity>
       </View>
     );
   }
@@ -232,15 +238,24 @@ const styles = StyleSheet.create(
 const AppNavigator = createStackNavigator({
   Home: {
     screen: HomeScreen,
-  },
-  Details: {
-    screen: DetailsScreen,
+    navigationOptions: {
+      header: null //this will hide the header
+    }
   },
   Square: {
     screen: SquareScreen,
+    navigationOptions: {
+      header: null //this will hide the header
+    }
+  },
+  auth: {
+    screen: AuthScreen,
+    navigationOptions: {
+      header: null //this will hide the header
+    }
   }
 }, {
-    initialRouteName: 'Home',
+    initialRouteName: 'auth',
 });
 
 export default createAppContainer(AppNavigator);
