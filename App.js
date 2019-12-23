@@ -12,76 +12,148 @@ AuthorizeErrorNoNetwork,
 deauthorizeAsync, canDeauthorizeAsync
 } from 'react-native-square-reader-sdk';
 
-var uid = "sq0acp-J5FkblPzGGWKMP-m3PHn-kiDj7Kr7ORbaS2DEQfrBdg"
-var link = "https://a1e57b11.ngrok.io/cedar-location-1/order"
 
 
 class AuthScreen extends React.Component{
-  static NavigationOptions = { title: 'Order', header: { visible:false } };
 
-  componentDidMount() {
-    window.setTimeout(async () => {
-      if (await canDeauthorizeAsync()) {
-        try {
-          await deauthorizeAsync();
-          try {
-            // authCode is a mobile authorization code from the Mobile Authorization API
-            const authorizedLocation = authorizeAsync(uid);
-            // Authorized and authorizedLocation is available
-          } catch(ex) {
-            switch(ex.code) {
-              case AuthorizeErrorNoNetwork:
-                // Remind connecting to network
-                break;
-              case UsageError:
-                let errorMessage = ex.message;
-                if (__DEV__) {
-                  errorMessage += `\n\nDebug Message: ${ex.debugMessage}`;
-                  console.log(`${ex.code}:${ex.debugCode}:${ex.debugMessage}`)
-                }
-                //alert('Error', errorMessage);
-                break;
-            }
-          }
-        } catch (ex) {
-          let errorMessage = ex.message;
-          if (__DEV__) {
-            errorMessage += `\n\nDebug Message: ${ex.debugMessage}`;
-            console.log(`${ex.code}:${ex.debugCode}:${ex.debugMessage}`);
-          }
-          alert('Error', errorMessage);
-        }
-      } else {
-        alert('Unable to deauthorize', 'You cannot deauthorize right now.');
-      }
-    }, 1000);
-
-
-
+  constructor(props) {
+    super(props);
+    this.state = {text: '',
+    text1:'',
+    text2:'',
+    text3:''};
   }
+ async componentDidMount() {
+ }
+    async getCode(link,codeVal) {
+  try {
+    let response = await fetch(
+      link,{
+      method: 'POST',
+      headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+      code: codeVal
+      }),
+    }
+    );
+    let responseJson = await response.json();
+    // alert(responseJson.code)
+    alert(responseJson.link);
+    if (await canDeauthorizeAsync()) {
+      try {
+        await deauthorizeAsync();
+        try {
+          // authCode is a mobile authorization code from the Mobile Authorization API
+          const authorizedLocation = authorizeAsync(responseJson.code);
+          // Authorized and authorizedLocation is available
+        } catch(ex) {
+          switch(ex.code) {
+            case AuthorizeErrorNoNetwork:
+              // Remind connecting to network
+              break;
+            case UsageError:
+              let errorMessage = ex.message;
+              if (__DEV__) {
+                errorMessage += `\n\nDebug Message: ${ex.debugMessage}`;
+                console.log(`${ex.code}:${ex.debugCode}:${ex.debugMessage}`)
+              }
+              //alert('Error', errorMessage);
+              break;
+          }
+        }
+      } catch (ex) {
+        let errorMessage = ex.message;
+        if (__DEV__) {
+          errorMessage += `\n\nDebug Message: ${ex.debugMessage}`;
+          console.log(`${ex.code}:${ex.debugCode}:${ex.debugMessage}`);
+        }
+        alert('Error', errorMessage);
+      }
+    } else {
+      alert('Unable to deauthorize', 'You cannot deauthorize right now.');
+    }
+    this.props.navigation.navigate('Home', {
+              link: responseJson.link });
+
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+
+
+
+
   render() {
     return (
-      <View style={styles.container}>
-        <StatusBar hidden />
-        <Text> </Text>
-        <Text> </Text>
-        <Text> </Text>
-        <Text> </Text>
-        <Text> </Text>
-        <Button
-          title="Press Here To start"
-          color = "green"
-          onPress={() => {
-            this.props.navigation.dispatch(StackActions.reset({
-              index: 0,
-              actions: [
-                NavigationActions.navigate({ routeName: 'Home' })
-              ],
-            }))
-          }}
-        />
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#000000' }}>
+       <StatusBar hidden />
+       <Text style={styles.titleText}>
+       Enter Your Root URL{"\n"}
+       </Text>
+       <TextInput
+           style={{width:300, height: 60, borderColor: 'white', borderWidth: 1, backgroundColor: 'white' }}
+           placeholder="EX a1e57b11.ngrok.io"
+           returnKeyLabel = {"next"}
+           onChangeText={
+             (text) => this.setState({text})
+           }
+           value={this.state.text}
+         />
+         <Text style={styles.titleText}>
+         {"\n"}Enter Location Name, Replace All Spaces With Dashes{"\n"}
+         </Text>
+         <TextInput
+             style={{width:300, height: 60, borderColor: 'white', borderWidth: 1, backgroundColor: 'white' }}
+             placeholder="Copy Location Name From Square"
+             returnKeyLabel = {"next"}
+             onChangeText={
+               (text1) => this.setState({text1})
+             }
+             value={this.state.text1}
+           />
+           <Text style={styles.titleText}>
+           {"\n"}Enter Employee Code{"\n"}
+           </Text>
+           <TextInput
+               style={{width:300, height: 60, borderColor: 'white', borderWidth: 1, backgroundColor: 'white' }}
+               placeholder="Code Used to Login to Employee Panel"
+               returnKeyLabel = {"next"}
+               onChangeText={
+                 (text3) => this.setState({text3})
+               }
+               value={this.state.text3}
+             />
+           <Text style={styles.titleText}>
+           {"\n"}Enter a 0 for QSR Kiosk or 1 For Sitdown Kiosk{"\n"}
+           </Text>
+           <TextInput
+               style={{width:300, height: 60, borderColor: 'white', borderWidth: 1, backgroundColor: 'white' }}
+               keyboardType={'numeric'}
+                placeholder=""
+                maxLength={1}
+               onChangeText={
+                 (text2) => this.setState({text2})
+               }
+               value={this.state.text2}
+             />
+             <Text style={styles.titleText}>
+             {"\n"}
+             </Text>
+         <TouchableOpacity
+           style={styles.button}
+           onPress={() => {
+            this.getCode(String("https://" + String(this.state.text) + "/reader/" + String(this.state.text1)+ "/" + String(this.state.text2)), String(this.state.text3));
 
-      </View>
+         }}
+       >
+         <Text style={styles.titleText}>Next</Text>
+         </TouchableOpacity>
+
+     </View>
     );
   }
 }
@@ -90,13 +162,14 @@ class AuthScreen extends React.Component{
 
 
 class HomeScreen extends React.Component{
-  static NavigationOptions = { title: 'Order', header: { visible:false } };
   constructor(props) {
         super(props)
     }
 
 
   render() {
+    const { navigation } = this.props;
+    const link = navigation.getParam('link', "cedarrobots.com");
 
     return (
       <View style={styles.container}>
@@ -122,7 +195,7 @@ class HomeScreen extends React.Component{
                   var amt = parseInt(data_arr[0], 10);
                   var token = String(data_arr[1]);
 
-                  this.props.navigation.navigate('Square', {amt: amt, token:token});
+                  this.props.navigation.navigate('Square', {amt: amt, token:token, linkval:link});
 
                 }
           }
@@ -211,6 +284,7 @@ class SquareScreen extends React.Component{
       const { navigation } = this.props;
       const amt = navigation.getParam('amt', 101);
       const token = navigation.getParam('token', '-noToken');
+      const link = navigation.getParam('linkval', 'error');
       var disp_amt = String(parseFloat(amt/100));
 
       // this.onCheckout(amt,token);
@@ -221,19 +295,10 @@ class SquareScreen extends React.Component{
             style={styles.button}
             onPress={() => {
                      this.onCheckout(amt,token);
-                     this.props.navigation.navigate('Home');
+                     this.props.navigation.navigate('Home', {linkval: link});
 
             }}>
           <Text style={styles.titleText}> Pay ${disp_amt}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => {
-                     // this.onCheckout(amt,token);
-                     this.props.navigation.navigate('Home');
-
-            }}>
-          <Text style={styles.titleText}>Cancel order</Text>
           </TouchableOpacity>
       </View>
     );
