@@ -248,25 +248,24 @@ class SquareScreen extends React.Component{
     };
 
     try {
-
         const checkoutResult = await startCheckoutAsync(checkoutParams);
 
-      }
 
-      let response = await fetch(
-        String(loc+"/verify-kiosk"),{
-        method: 'POST',
-        headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-        tokenVal: token
-        }),
-      }
-      );
-      let responseJson = await response.json();
-      if(responseJson.success == "true"){
+
+        let response = await fetch(
+          String(loc+"/verify-kiosk"),{
+          method: 'POST',
+          headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+          tokenVal: token
+          }),
+        }
+        );
+        let responseJson = await response.json();
+        if(responseJson.success == "true"){
       this.props.navigation.navigate('Home', {linkval: link});
     }
       console.log(JSON.stringify(checkoutResult));
