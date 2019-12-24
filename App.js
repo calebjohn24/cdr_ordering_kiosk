@@ -194,8 +194,9 @@ class HomeScreen extends React.Component{
                   data_arr = data.split("~");
                   var amt = parseInt(data_arr[0], 10);
                   var token = String(data_arr[1]);
+                  var loc = String(data_arr[2]);
 
-                  this.props.navigation.navigate('Square', {amt: amt, token:token, linkval:link});
+                  this.props.navigation.navigate('Square', {amt: amt, token:token, linkval:link, loc:loc});
 
                 }
           }
@@ -226,7 +227,7 @@ class SquareScreen extends React.Component{
       }
     }
   }
-  async onCheckout(amt, token) {
+  async onCheckout(amt,token,loc,link) {
     const { navigate } = this.props.navigation;
     const checkoutParams = {
       amountMoney: {
@@ -247,18 +248,31 @@ class SquareScreen extends React.Component{
     };
 
     try {
-      const checkoutResult = await startCheckoutAsync(checkoutParams);
-      // this.props.navigation.navigate('Home');
-      // Consume checkout result from here
-      // webHook Here
-      const currencyFormatter = this.props.globalize.getCurrencyFormatter(
-        checkoutResult.totalMoney.currencyCode,
-        { minimumFractionDigits: 0, maximumFractionDigits: 2 },
+
+        const checkoutResult = await startCheckoutAsync(checkoutParams);
+
+      }
+
+      let response = await fetch(
+        String(loc+"/verify-kiosk"),{
+        method: 'POST',
+        headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+        tokenVal: token
+        }),
+      }
       );
-      const formattedCurrency = currencyFormatter(checkoutResult.totalMoney.amount / 100);
-      //alert(`${formattedCurrency} Successfully Charged`, 'See the debugger console for transaction details. You can refund transactions from your Square Dashboard.');
+      let responseJson = await response.json();
+      if(responseJson.success == "true"){
+      this.props.navigation.navigate('Home', {linkval: link});
+    }
       console.log(JSON.stringify(checkoutResult));
-      alert("done");
+
+
+
 
 
     } catch (ex) {
@@ -277,14 +291,15 @@ class SquareScreen extends React.Component{
           break;
       }
     }
+    // this.props.navigation.navigate('Home', {linkval: link});
     }
-
 
     render(){
       const { navigation } = this.props;
       const amt = navigation.getParam('amt', 101);
       const token = navigation.getParam('token', '-noToken');
       const link = navigation.getParam('linkval', 'error');
+      const loc = navigation.getParam('loc', 'error');
       var disp_amt = String(parseFloat(amt/100));
 
       // this.onCheckout(amt,token);
@@ -294,8 +309,9 @@ class SquareScreen extends React.Component{
           <TouchableOpacity
             style={styles.button}
             onPress={() => {
-                     this.onCheckout(amt,token);
-                     this.props.navigation.navigate('Home', {linkval: link});
+                     this.onCheckout(100,token,loc,link);
+                    //
+
 
             }}>
           <Text style={styles.titleText}> Pay ${disp_amt}</Text>
