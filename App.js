@@ -18,10 +18,12 @@ class AuthScreen extends React.Component{
 
   constructor(props) {
     super(props);
-    this.state = {text: '',
+    this.state = {
+    text: '',
     text1:'',
     text2:'',
-    text3:''};
+    text3:''
+  };
   }
  async componentDidMount() {
  }
@@ -41,7 +43,9 @@ class AuthScreen extends React.Component{
     );
     let responseJson = await response.json();
     // alert(responseJson.code)
-    alert(responseJson.link);
+    if(responseJson.success == "yes"){
+
+    // alert(responseJson.link);
     if (await canDeauthorizeAsync()) {
       try {
         await deauthorizeAsync();
@@ -76,7 +80,11 @@ class AuthScreen extends React.Component{
       alert('Unable to deauthorize', 'You cannot deauthorize right now.');
     }
     this.props.navigation.navigate('Home', {
-              link: responseJson.link });
+              link: responseJson.link, kioskCode:codeVal });
+  }
+  else{
+    alert(responseJson.code)
+  }
 
   } catch (error) {
     console.error(error);
@@ -92,11 +100,11 @@ class AuthScreen extends React.Component{
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#000000' }}>
        <StatusBar hidden />
        <Text style={styles.titleText}>
-       Enter Your Root URL{"\n"}
+       Enter Your Restaurant Name{"\n"}
        </Text>
        <TextInput
            style={{width:300, height: 60, borderColor: 'white', borderWidth: 1, backgroundColor: 'white' }}
-           placeholder="EX a1e57b11.ngrok.io"
+           placeholder=" "
            returnKeyLabel = {"next"}
            onChangeText={
              (text) => this.setState({text})
@@ -116,11 +124,11 @@ class AuthScreen extends React.Component{
              value={this.state.text1}
            />
            <Text style={styles.titleText}>
-           {"\n"}Enter Employee Code{"\n"}
+           {"\n"}Enter Kiosk Code{"\n"}
            </Text>
            <TextInput
                style={{width:300, height: 60, borderColor: 'white', borderWidth: 1, backgroundColor: 'white' }}
-               placeholder="Code Used to Login to Employee Panel"
+               placeholder="Kiosk Code"
                returnKeyLabel = {"next"}
                onChangeText={
                  (text3) => this.setState({text3})
@@ -146,7 +154,7 @@ class AuthScreen extends React.Component{
          <TouchableOpacity
            style={styles.button}
            onPress={() => {
-            this.getCode(String("https://" + String(this.state.text) + "/reader/" + String(this.state.text1)+ "/" + String(this.state.text2)), String(this.state.text3));
+            this.getCode(String("https://83f5ca72.ngrok.io/" + String(this.state.text) + "/" + String(this.state.text1)+ "/kiosksetup/" + String(this.state.text2)), String(this.state.text3));
 
          }}
        >
@@ -159,8 +167,6 @@ class AuthScreen extends React.Component{
 }
 
 
-
-
 class HomeScreen extends React.Component{
   constructor(props) {
         super(props)
@@ -170,6 +176,7 @@ class HomeScreen extends React.Component{
   render() {
     const { navigation } = this.props;
     const link = navigation.getParam('link', "cedarrobots.com");
+    const kioskCode = navigation.getParam('kioskCode', "0");
 
     return (
       <View style={styles.container}>
@@ -196,7 +203,7 @@ class HomeScreen extends React.Component{
                   var token = String(data_arr[1]);
                   var loc = String(data_arr[2]);
 
-                  this.props.navigation.navigate('Square', {amt: amt, token:token, linkval:link, loc:loc});
+                  this.props.navigation.navigate('Square', {amt: amt, token:token, linkval:link, loc:loc, kioskCode:kioskCode});
 
                 }
           }
@@ -227,7 +234,7 @@ class SquareScreen extends React.Component{
       }
     }
   }
-  async onCheckout(amt,token,loc,link) {
+  async onCheckout(amt,token,loc,link,kioskCode) {
     const { navigate } = this.props.navigation;
     const checkoutParams = {
       amountMoney: {
@@ -253,7 +260,7 @@ class SquareScreen extends React.Component{
 
 
         let response = await fetch(
-          String(loc+"/verify-kiosk"),{
+          String(loc+"/verify-kiosk-payment~" + kioskCode),{
           method: 'POST',
           headers: {
           Accept: 'application/json',
@@ -266,6 +273,12 @@ class SquareScreen extends React.Component{
         );
         let responseJson = await response.json();
         if(responseJson.success == "true"){
+      this.props.navigation.navigate('Home', {linkval: link, kioskCode:kioskCode});
+    }
+    else if(responseJson.success == "kiosk deactivated"){
+      this.props.navigation.navigate('auth');
+    }
+    else{
       this.props.navigation.navigate('Home', {linkval: link});
     }
       console.log(JSON.stringify(checkoutResult));
@@ -299,6 +312,7 @@ class SquareScreen extends React.Component{
       const token = navigation.getParam('token', '-noToken');
       const link = navigation.getParam('linkval', 'error');
       const loc = navigation.getParam('loc', 'error');
+      const kioskCode = navigation.getParam('kioskCode', '0');
       var disp_amt = String(parseFloat(amt/100));
 
       // this.onCheckout(amt,token);
@@ -308,7 +322,7 @@ class SquareScreen extends React.Component{
           <TouchableOpacity
             style={styles.button}
             onPress={() => {
-                     this.onCheckout(100,token,loc,link);
+                     this.onCheckout(100,token,loc,link, kioskCode);
                     //
 
 
