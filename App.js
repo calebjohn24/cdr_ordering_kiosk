@@ -100,7 +100,7 @@ class AuthScreen extends React.Component{
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#000000' }}>
        <StatusBar hidden />
        <Text style={styles.titleText}>
-       Enter Your Restaurant Name{"\n"}
+       Enter Your Restaurant Name (Replace All Spaces With Dashes){"\n"}
        </Text>
        <TextInput
            style={{width:300, height: 60, borderColor: 'white', borderWidth: 1, backgroundColor: 'white' }}
@@ -112,7 +112,7 @@ class AuthScreen extends React.Component{
            value={this.state.text}
          />
          <Text style={styles.titleText}>
-         {"\n"}Enter Location Name, Replace All Spaces With Dashes{"\n"}
+         {"\n"}Enter Location Name (Replace All Spaces With Dashes){"\n"}
          </Text>
          <TextInput
              style={{width:300, height: 60, borderColor: 'white', borderWidth: 1, backgroundColor: 'white' }}
@@ -154,7 +154,7 @@ class AuthScreen extends React.Component{
          <TouchableOpacity
            style={styles.button}
            onPress={() => {
-            this.getCode(String("https://83f5ca72.ngrok.io/" + String(this.state.text) + "/" + String(this.state.text1)+ "/kiosksetup/" + String(this.state.text2)), String(this.state.text3));
+            this.getCode(String("https://83f5ca72.ngrok.io/" + String(this.state.text).toLowerCase() + "/" + String(this.state.text1).toLowerCase()+ "/kiosksetup/" + String(this.state.text2)), String(this.state.text3));
 
          }}
        >
