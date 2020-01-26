@@ -37,7 +37,8 @@ class AuthScreen extends React.Component{
       'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-      code: codeVal
+      code: codeVal,
+      csrf_token:String("IjRjYjg1MTM3M2Y3MjVlNThhZTljNWJmNTdjZTBjNGEzOTA1OTc2ZTYi.XizOhg.yDcXK1PCGKoerMv4H3kD9CEvg5s")
       }),
     }
     );
@@ -154,7 +155,7 @@ class AuthScreen extends React.Component{
          <TouchableOpacity
            style={styles.button}
            onPress={() => {
-            this.getCode(String("https://83f5ca72.ngrok.io/" + String(this.state.text).toLowerCase() + "/" + String(this.state.text1).toLowerCase()+ "/kiosksetup/" + String(this.state.text2)), String(this.state.text3));
+            this.getCode(String("https://2f2fbe4e.ngrok.io/" + String(this.state.text).toLowerCase() + "/" + String(this.state.text1).toLowerCase()+ "/kiosksetup/" + String(this.state.text2)), String(this.state.text3));
 
          }}
        >
@@ -267,7 +268,8 @@ class SquareScreen extends React.Component{
           'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-          tokenVal: token
+          tokenVal: token,
+          csrf_token: String("IjRjYjg1MTM3M2Y3MjVlNThhZTljNWJmNTdjZTBjNGEzOTA1OTc2ZTYi.XizOhg.yDcXK1PCGKoerMv4H3kD9CEvg5s")
           }),
         }
         );
@@ -327,7 +329,7 @@ class SquareScreen extends React.Component{
 
 
             }}>
-          <Text style={styles.titleText}> Pay ${disp_amt}</Text>
+          <Text style={styles.titleText}>Tap Here To Pay</Text>
           </TouchableOpacity>
       </View>
     );
